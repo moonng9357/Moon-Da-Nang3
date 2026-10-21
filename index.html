@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🇻🇳 越南會安 & 峴港 6日親子慢遊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{--paper:#FAF7F0;--ink:#2D3748;--lantern:#E56B6F;--gold:#F4A261;--green:#2A9D8F;--blue:#4A90E2;--purple:#B5838D;}
+*{box-sizing:border-box;}
+body{font-family:'Zen Maru Gothic',-apple-system,sans-serif;background:var(--paper);color:var(--ink);margin:0;padding:0 12px 110px;-webkit-tap-highlight-color:transparent;}
+.bd{border:3px solid var(--ink);border-radius:20px;box-shadow:4px 4px 0 var(--ink);}
+.bds{border:2.5px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink);}
+.hide{display:none!important;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px;border-radius:14px;font-size:10px;font-weight:700;color:#555;border:1px solid transparent;transition:.2s;cursor:pointer;}
+.nav-btn.active{background:#FFE66D;transform:translateY(-4px);box-shadow:2px 4px 0 var(--ink);border-color:var(--ink);}
+.no-sb::-webkit-scrollbar{display:none}.no-sb{-ms-overflow-style:none;scrollbar-width:none}
+.day-chip{flex-shrink:0;cursor:pointer;background:#fff;border:2px solid var(--ink);padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;transition:.2s;}
+.day-chip.active{background:var(--lantern);color:#fff;box-shadow:2px 3px 0 var(--ink);transform:scale(1.05);}
+input,select,textarea{font-family:inherit;font-size:13px;border:2px solid var(--ink);border-radius:10px;padding:6px 8px;background:#fff;width:100%;color:var(--ink);}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);}
+.btn{border:2.5px solid var(--ink);border-radius:12px;box-shadow:2px 3px 0 var(--ink);padding:6px 12px;font-weight:700;font-size:12px;background:#fff;cursor:pointer;transition:.1s;}
+.btn:active{transform:translate(2px,3px);box-shadow:none;}
+.btn-green{background:#B7E4C7}.btn-red{background:#FFADAD}.btn-gold{background:#FFE66D}.btn-blue{background:#A0C4FF}
+.strike{text-decoration:line-through;color:#8D99AE;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 16px;border-radius:999px;font-size:12px;font-weight:700;z-index:999;opacity:0;transition:.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.card{background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:3px 3px 0 var(--ink);padding:12px;margin-bottom:12px;}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid #ccc;}
+.sec-title{font-size:15px;font-weight:900;display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.rate-box{background:#FFF3B0;border:2.5px solid var(--ink);border-radius:14px;padding:10px;box-shadow:3px 3px 0 var(--ink);}
+.settle-line{background:#E8F5E9;border-left:5px solid var(--green);padding:8px 10px;border-radius:8px;font-size:13px;font-weight:700;margin:6px 0;}
+</style>
+</head>
+<body>
+
+<!-- ===== 顶部标题 & 保存状态 ===== -->
+<header class="bd p-4 mt-3 mb-4 text-center relative" style="background:#FFFDF9;">
+  <div class="text-4xl mb-1">🇻🇳</div>
+  <h1 class="text-xl font-black">越南會安 & 峴港</h1>
+  <p class="text-[11px] font-bold" style="color:var(--lantern)">6日5夜 · 3個小朋友親子慢遊</p>
+  <div id="saveStatus" style="position:absolute;top:8px;right:10px;font-size:10px;font-weight:700;color:#2A9D8F;">💾 已儲存</div>
+  <div id="versionTag" style="position:absolute;bottom:6px;right:10px;font-size:9px;color:#aaa;"></div>
+</header>
+
+<!-- ===== 主内容面板 ===== -->
+<main>
+
+<!-- ---------- 1. 行程表 ---------- -->
+<section id="panel-schedule" class="tab-panel active">
+  <div class="sec-title">🗓️ 行程表（按日期收納）</div>
+  <div id="dayChips" class="flex gap-2 overflow-x-auto no-sb pb-3"></div>
+  <div id="dayContent"></div>
+</section>
+
+<!-- ---------- 2. 地圖 ---------- -->
+<section id="panel-map" class="tab-panel">
+  <div class="sec-title">🗺️ 地圖導航 & 交通</div>
+  <div id="mapContent"></div>
+</section>
+
+<!-- ---------- 3. 記帳 ---------- -->
+<section id="panel-ledger" class="tab-panel">
+  <div class="sec-title">💰 記帳 & 結算</div>
+
+  <!-- 汇率显示 -->
+  <div class="rate-box mb-3">
+    <div class="flex items-center justify-between text-[12px] font-bold">
+      <span>💱 匯率</span>
+      <span>1 HKD = <input id="rateInput" type="number" step="0.01" style="width:80px;display:inline-block;padding:2px 6px;" value="3000"> VND</span>
+    </div>
+    <div class="text-[11px] mt-1 text-gray-600" id="rateDisplay"></div>
+  </div>
+
+  <!-- 新增帐目 -->
+  <div class="card">
+    <div class="font-bold text-[13px] mb-2">➕ 新增項目</div>
+    <div class="space-y-2">
+      <input id="itemName" placeholder="項目名稱（如：午餐）">
+      <div class="flex gap-2">
+        <input id="itemAmount" type="number" placeholder="總數" style="flex:1;">
+        <select id="itemCurrency" style="width:110px;">
+          <option value="VND">VND 越元</option>
+          <option value="HKD">HKD 港幣</option>
+        </select>
+      </div>
+      <input id="itemPayer" placeholder="誰負責付款（人名）">
+      <input id="itemMembers" placeholder="參與人數 / 人名，用逗號分隔（例：A,B,C）">
+      <div class="flex gap-2">
+        <label class="text-[12px] flex items-center gap-1"><input type="radio" name="splitMode" value="equal" checked style="width:auto;"> 人均</label>
+        <label class="text-[12px] flex items-center gap-1"><input type="radio" name="splitMode" value="custom" style="width:auto;"> 分開付</label>
+      </div>
+      <div id="customSplitBox" class="hide space-y-1"></div>
+      <button class="btn btn-green w-full" onclick="addItem()">新增項目</button>
+    </div>
+  </div>
+
+  <!-- 帐目列表 -->
+  <div class="sec-title mt-2">📋 帳目列表</div>
+  <div id="ledgerList"></div>
+
+  <!-- 统一结算 -->
+  <div class="card mt-2">
+    <div class="font-bold text-[13px] mb-2">🧮 統一結算（未結清項目）</div>
+    <div id="settleResult"></div>
+    <div class="flex gap-2 mt-2">
+      <button class="btn btn-gold flex-1" onclick="calcSettle()">計算結算</button>
+      <button class="btn btn-blue flex-1" onclick="exportText()">匯出文字</button>
+    </div>
+    <button class="btn w-full mt-2" onclick="exportImage()">📸 匯出圖片</button>
+  </div>
+
+  <!-- 结算历史 -->
+  <div class="sec-title mt-2">🕘 結算歷史</div>
+  <div id="settleHistory"></div>
+</section>
+
+<!-- ---------- 4. 汇率计算器 ---------- -->
+<section id="panel-rate" class="tab-panel">
+  <div class="sec-title">💱 匯率換算器</div>
+  <div class="card">
+    <div class="flex items-center gap-2 mb-2">
+      <input id="convInput" type="number" placeholder="輸入金額" style="flex:1;">
+      <select id="convFrom" style="width:100px;"><option value="HKD">HKD</option><option value="VND">VND</option></select>
+    </div>
+    <div class="text-center text-lg font-black my-2">⬇️</div>
+    <div class="flex items-center gap-2">
+      <input id="convOutput" type="text" readonly style="flex:1;background:#f5f5f5;">
+      <select id="convTo" style="width:100px;"><option value="VND">VND</option><option value="HKD">HKD</option></select>
+    </div>
+  </div>
+  <div class="rate-box text-[12px]">
+    <div id="convRateInfo"></div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== 底部导航 ===== -->
+<nav style="position:fixed;bottom:12px;left:0;right:0;max-width:440px;margin:0 auto;padding:0 16px;z-index:50;">
+  <div class="bd p-1.5 flex justify-around items-center" style="background:#fff;">
+    <div class="nav-btn active" data-tab="schedule" onclick="switchTab('schedule')"><span style="font-size:18px">🗓️</span>行程</div>
+    <div class="nav-btn" data-tab="map" onclick="switchTab('map')"><span style="font-size:18px">🗺️</span>地圖</div>
+    <div class="nav-btn" data-tab="ledger" onclick="switchTab('ledger')"><span style="font-size:18px">💰</span>記帳</div>
+    <div class="nav-btn" data-tab="rate" onclick="switchTab('rate')"><span style="font-size:18px">💱</span>匯率</div>
+  </div>
+</nav>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============================================================
+   核心数据 & localStorage
+   ============================================================ */
+const STORAGE_KEY = 'vietnam_family_trip_v1';
+const DATA_VERSION = 1;
+
+const defaultData = {
+  version: DATA_VERSION,
+  activeTab: 'schedule',
+  activeDay: 0,
+  rate: 3000, // 1 HKD = ? VND
+  itinerary: [
+    { date: '12/03 (四)', title: '到埗 ➔ 會安 Villa', items: [
+      { time: '15:50', title: '峴港機場 → 會安 Airbnb', desc: '攞行李、上車直接去會安。唔好安排景點，小朋友坐完飛機需要回氣。', map: 'https://maps.google.com/?q=Da+Nang+International+Airport', transport: '包車直達會安，車程約45分鐘' }
+    ]},
+    { date: '12/04 (五)', title: 'Villa 慢活 ➔ 會安古城', items: [
+      { time: '全日', title: 'Villa 泳池 + 午睡', desc: '玩水、午餐、瞓晏覺。', map: '', transport: '' },
+      { time: '16:30', title: '會安古城散步', desc: '4點後入古城，涼爽人少燈開始亮。唔好坐椰子船。', map: 'https://maps.google.com/?q=Hoi+An+Ancient+Town', transport: '從 Villa 包車約15分鐘，古城入口落車' }
+    ]},
+    { date: '12/05 (六)', title: '全日 Villa + BBQ', items: [
+      { time: '全日', title: '玩水、沙灘、BBQ', desc: '休息日，留喺 Villa 最舒服。', map: 'https://maps.google.com/?q=An+Bang+Beach', transport: '步行到安邦海灘約1分鐘' }
+    ]},
+    { date: '12/06 (日)', title: '轉酒店 ➔ 峴港', items: [
+      { time: '12:00', title: '會安退房 → 峴港 Check-in', desc: '慢慢食早餐、最後玩水。轉酒店已經夠攰，唔加景點。', map: 'https://maps.google.com/?q=My+Khe+Beach+Da+Nang', transport: '包車約40分鐘' }
+    ]},
+    { date: '12/07 (一)', title: '二選一：水上樂園 / 商場', items: [
+      { time: '選項A', title: '三日月水上樂園', desc: '1歲要大人全程抱，3歲睇實。', map: 'https://maps.google.com/?q=Mikazuki+Water+Park+Da+Nang', transport: '從峴港 Airbnb 包車約20分鐘' },
+      { time: '選項B', title: 'GOI + Vincom Plaza', desc: '有冷氣、廁所、美食廣場。', map: 'https://maps.google.com/?q=Vincom+Plaza+Da+Nang', transport: '包車約10分鐘' }
+    ]},
+    { date: '12/08 (二)', title: '慢早餐 ➔ Vincom ➔ 機場', items: [
+      { time: '10:00', title: 'Villa 早餐 + 泳池 + 收拾', desc: '唔好趕。', map: '', transport: '' },
+      { time: '12:30', title: 'Vincom Plaza Da Nang', desc: '跳過韓江市場，人多濕滑推車唔方便。', map: 'https://maps.google.com/?q=Vincom+Plaza+Da+Nang', transport: '從 Villa 包車約10分鐘，14:00出發去機場' }
+    ]}
+  ],
+  ledger: [],       // {id, name, amount, currency, payer, members, splitMode, customShares, settled, createdAt}
+  settleHistory: [],// {id, date, lines, totalLines}
+  members: ['A', 'B', 'C']
+};
+
+let DATA = loadData();
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return JSON.parse(JSON.stringify(defaultData));
+    const parsed = JSON.parse(raw);
+    if(!parsed.version || parsed.version < DATA_VERSION){
+      // 旧版本兼容逻辑（目前只有 v1）
+    }
+    return Object.assign(JSON.parse(JSON.stringify(defaultData)), parsed);
+  }catch(e){ return JSON.parse(JSON.stringify(defaultData)); }
+}
+
+let saveTimer = null;
+function saveData(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+    setSaveStatus('💾 已儲存', '#2A9D8F');
+  }catch(e){
+    setSaveStatus('⚠️ 儲存失敗', '#E56B6F');
+  }
+}
+function autoSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveData, 200);
+}
+function setSaveStatus(text, color){
+  const el = document.getElementById('saveStatus');
+  if(el){ el.textContent = text; el.style.color = color; }
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ============================================================
+   导航切换
+   ============================================================ */
+function switchTab(tab){
+  DATA.activeTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  autoSave();
+  if(tab==='map') renderMap();
+  if(tab==='ledger') renderLedger();
+  if(tab==='rate') renderRate();
+}
+
+/* ============================================================
+   行程表
+   ============================================================ */
+function renderSchedule(){
+  const chips = document.getElementById('dayChips');
+  const content = document.getElementById('dayContent');
+  chips.innerHTML = DATA.itinerary.map((d,i)=>
+    `<div class="day-chip ${i===DATA.activeDay?'active':''}" onclick="selectDay(${i})">Day ${i+1} • ${d.date}</div>`
+  ).join('');
+  const d = DATA.itinerary[DATA.activeDay];
+  content.innerHTML = `<div class="bd p-3 mb-2 text-center text-[12px] font-bold" style="background:#FFE29A;">📍 ${d.title}</div>` +
+    d.items.map((it,idx)=>`
+      <div class="card">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-[10px] font-black text-white px-2 py-0.5 rounded" style="background:var(--blue);">${it.time||''}</span>
+          <button class="btn btn-red" style="padding:2px 6px;font-size:10px;" onclick="delScheduleItem(${idx})">刪除</button>
+        </div>
+        <div class="font-bold text-[13px]">${it.title}</div>
+        <div class="text-[12px] text-gray-600 mt-1">${it.desc||''}</div>
+        ${it.transport?`<div class="text-[11px] mt-1" style="color:var(--green);">🚌 ${it.transport}</div>`:''}
+        ${it.map?`<a href="${it.map}" target="_blank" class="inline-block mt-2 text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200">📍 Google Map 導航</a>`:''}
+      </div>
+    `).join('');
+}
+function selectDay(i){ DATA.activeDay = i; renderSchedule(); autoSave(); }
+function delScheduleItem(idx){
+  if(!confirm('確定刪除此行程項目？')) return;
+  DATA.itinerary[DATA.activeDay].items.splice(idx,1);
+  renderSchedule(); autoSave(); showToast('已刪除');
+}
+function addScheduleItem(){
+  const title = prompt('行程標題（例：午餐）');
+  if(!title) return;
+  const time = prompt('時間（例：12:00）') || '';
+  const desc = prompt('描述') || '';
+  const map = prompt('Google Map 連結（可留空）') || '';
+  const transport = prompt('交通說明（可留空）') || '';
+  DATA.itinerary[DATA.activeDay].items.push({time,title,desc,map,transport});
+  renderSchedule(); autoSave(); showToast('已新增');
+}
+
+/* ============================================================
+   地图
+   ============================================================ */
+function renderMap(){
+  const el = document.getElementById('mapContent');
+  let html = '';
+  DATA.itinerary.forEach(d=>{
+    d.items.forEach(it=>{
+      if(it.map){
+        html += `<div class="card">
+          <div class="font-bold text-[13px]">📍 ${it.title}</div>
+          <div class="text-[11px] text-gray-600 mt-1">${it.transport||''}</div>
+          <a href="${it.map}" target="_blank" class="inline-block mt-2 text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200">開啟 Google Map</a>
+        </div>`;
+      }
+    });
+  });
+  el.innerHTML = html || '<div class="text-center text-gray-400 text-[12px] mt-6">未有地圖景點</div>';
+}
+
+/* ============================================================
+   记账
+   ============================================================ */
+function parseMembers(str){
+  return str.split(/[,，\s]+/).filter(Boolean);
+}
+function getMembersFromInput(){
+  const s = document.getElementById('itemMembers').value.trim();
+  return s ? parseMembers(s) : ['A','B','C'];
+}
+function renderCustomSplit(){
+  const box = document.getElementById('customSplitBox');
+  const mode = document.querySelector('input[name="splitMode"]:checked').value;
+  if(mode==='equal'){ box.classList.add('hide'); box.innerHTML=''; return; }
+  box.classList.remove('hide');
+  const members = getMembersFromInput();
+  box.innerHTML = members.map((m,i)=>`
+    <div class="flex items-center gap-2">
+      <span class="text-[12px] font-bold w-16">${m}</span>
+      <input type="number" class="customShare" data-name="${m}" placeholder="應付金額">
+    </div>
+  `).join('');
+}
+document.addEventListener('change', e=>{
+  if(e.target.name==='splitMode') renderCustomSplit();
+});
+document.getElementById('itemMembers')?.addEventListener('input', renderCustomSplit);
+
+function addItem(){
+  const name = document.getElementById('itemName').value.trim();
+  const amount = parseFloat(document.getElementById('itemAmount').value);
+  const currency = document.getElementById('itemCurrency').value;
+  const payer = document.getElementById('itemPayer').value.trim();
+  const members = getMembersFromInput();
+  const mode = document.querySelector('input[name="splitMode"]:checked').value;
+  if(!name || !amount || !payer){ showToast('請填寫項目、金額、付款人'); return; }
+  let customShares = null;
+  if(mode==='custom'){
+    customShares = {};
+    let ok = true;
+    document.querySelectorAll('.customShare').forEach(inp=>{
+      const v = parseFloat(inp.value);
+      if(isNaN(v) || v<0){ ok=false; return; }
+      customShares[inp.dataset.name] = v;
+    });
+    if(!ok){ showToast('請填寫每人應付金額'); return; }
+  }
+  DATA.ledger.push({
+    id: Date.now(),
+    name, amount, currency, payer, members, splitMode: mode, customShares,
+    settled: false, createdAt: new Date().toISOString()
+  });
+  document.getElementById('itemName').value='';
+  document.getElementById('itemAmount').value='';
+  document.getElementById('itemPayer').value='';
+  document.getElementById('itemMembers').value='';
+  document.querySelectorAll('.customShare').forEach(i=>i.value='');
+  renderCustomSplit();
+  renderLedger();
+  autoSave();
+  showToast('已新增帳目');
+}
+
+function renderLedger(){
+  const el = document.getElementById('ledgerList');
+  if(!DATA.ledger.length){ el.innerHTML = '<div class="text-center text-gray-400 text-[12px] py-4">未有帳目</div>'; return; }
+  el.innerHTML = DATA.ledger.map(it=>{
+    const cur = it.currency==='VND'?'₫':'HK$';
+    return `<div class="card ${it.settled?'strike':''}">
+      <div class="flex justify-between items-start">
+        <div>
+          <div class="font-bold text-[13px]">${it.name} ${it.settled?'✅':''}</div>
+          <div class="text-[11px] text-gray-600">${it.payer} 付 ${cur}${it.amount.toLocaleString()} · ${it.splitMode==='equal'?'人均':'分開付'} · 參與：${it.members.join(',')}</div>
+        </div>
+        <div class="flex gap-1">
+          ${it.settled?'':`<button class="btn" style="padding:2px 6px;font-size:10px;" onclick="settleItem(${it.id})">結清</button>`}
+          <button class="btn btn-red" style="padding:2px 6px;font-size:10px;" onclick="delItem(${it.id})">刪</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function settleItem(id){
+  const it = DATA.ledger.find(x=>x.id===id);
+  if(!it) return;
+  it.settled = true;
+  renderLedger(); calcSettle(); autoSave(); showToast('已結清');
+}
+function delItem(id){
+  if(!confirm('確定刪除此帳目？')) return;
+  DATA.ledger = DATA.ledger.filter(x=>x.id!==id);
+  renderLedger(); autoSave(); showToast('已刪除');
+}
+
+/* ============================================================
+   结算逻辑
+   ============================================================ */
+function calcSettle(){
+  const rate = parseFloat(document.getElementById('rateInput').value) || DATA.rate;
+  DATA.rate = rate;
+  const active = DATA.ledger.filter(x=>!x.settled);
+  if(!active.length){ document.getElementById('settleResult').innerHTML='<div class="text-gray-400 text-[12px]">未有未結清項目</div>'; return; }
+  // 计算每人净额（统一转为 HKD）
+  const balance = {};
+  active.forEach(it=>{
+    const amountHKD = it.currency==='VND' ? it.amount/rate : it.amount;
+    const n = it.members.length;
+    let shares = {};
+    if(it.splitMode==='equal'){
+      const per = amountHKD / n;
+      it.members.forEach(m=>shares[m]=per);
+    }else{
+      Object.keys(it.customShares||{}).forEach(m=>{
+        const v = it.customShares[m];
+        shares[m] = it.currency==='VND' ? v/rate : v;
+      });
+    }
+    // 付款人先加回
+    balance[it.payer] = (balance[it.payer]||0) + amountHKD;
+    // 每人扣应付款
+    Object.keys(shares).forEach(m=>{ balance[m] = (balance[m]||0) - shares[m]; });
+  });
+  // 结算算法
+  const creditors = [], debtors = [];
+  Object.keys(balance).forEach(m=>{
+    const b = Math.round(balance[m]*100)/100;
+    if(b>0.01) creditors.push({m, v:b});
+    else if(b<-0.01) debtors.push({m, v:-b});
+  });
+  creditors.sort((a,b)=>b.v-a.v); debtors.sort((a,b)=>b.v-a.v);
+  const lines = [];
+  let ci=0, di=0;
+  while(ci<creditors.length && di<debtors.length){
+    const c=creditors[ci], d=debtors[di];
+    const amt = Math.min(c.v, d.v);
+    if(amt>0.01){
+      const hkd = Math.round(amt*100)/100;
+      const vnd = Math.round(amt*rate);
+      lines.push({from:d.m, to:c.m, hkd, vnd});
+      c.v -= amt; d.v -= amt;
+    }
+    if(c.v<0.01) ci++;
+    if(d.v<0.01) di++;
+  }
+  // 渲染
+  const box = document.getElementById('settleResult');
+  if(!lines.length){ box.innerHTML='<div class="text-green-600 font-bold text-[13px]">🎉 已平數，無需找數</div>'; return; }
+  DATA._lastSettleLines = lines;
+  DATA._lastSettleTime = new Date().toISOString();
+  box.innerHTML = lines.map(l=>`
+    <div class="settle-line">（${l.from}）應該付（${l.to}） HK$${l.hkd.toFixed(2)} / ₫${l.vnd.toLocaleString()}</div>
+  `).join('') + `<button class="btn btn-green w-full mt-2" onclick="saveSettle()">✅ 確認並記錄今次結算</button>`;
+}
+
+function saveSettle(){
+  if(!DATA._lastSettleLines || !DATA._lastSettleLines.length){ showToast('沒有可記錄的結算'); return; }
+  DATA.settleHistory.unshift({
+    id: Date.now(),
+    date: new Date().toLocaleString('zh-HK'),
+    lines: DATA._lastSettleLines,
+    rate: DATA.rate
+  });
+  // 标记所有未结清为已结清
+  DATA.ledger.forEach(x=>{ if(!x.settled) x.settled = true; });
+  DATA._lastSettleLines = null;
+  renderLedger(); renderHistory(); autoSave(); showToast('已記錄結算');
+}
+function renderHistory(){
+  const el = document.getElementById('settleHistory');
+  if(!DATA.settleHistory.length){ el.innerHTML='<div class="text-gray-400 text-[12px]">未有結算歷史</div>'; return; }
+  el.innerHTML = DATA.settleHistory.map(h=>`
+    <div class="card">
+      <div class="font-bold text-[12px]">🕘 ${h.date}</div>
+      ${h.lines.map(l=>`<div class="text-[12px] mt-1">（${l.from}）應該付（${l.to}） HK$${l.hkd.toFixed(2)} / ₫${l.vnd.toLocaleString()}</div>`).join('')}
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   导出
+   ============================================================ */
+function exportText(){
+  if(!DATA.settleHistory.length){ showToast('未有結算可匯出'); return; }
+  let txt = '越南之旅 結算歷史\n\n';
+  DATA.settleHistory.forEach(h=>{
+    txt += `【${h.date}】\n`;
+    h.lines.forEach(l=>{ txt += `（${l.from}）應該付（${l.to}） HK$${l.hkd.toFixed(2)} / ₫${l.vnd.toLocaleString()}\n`; });
+    txt += '\n';
+  });
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vietnam_settle_' + Date.now() + '.txt';
+  a.click();
+  showToast('已匯出文字');
+}
+
+function exportImage(){
+  if(!DATA.settleHistory.length){ showToast('未有結算可匯出'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; canvas.height = 200 + DATA.settleHistory.length * 100;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FAF7F0'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#2D3748'; ctx.font = 'bold 28px sans-serif';
+  ctx.fillText('🇻🇳 越南之旅 結算歷史', 30, 50);
+  let y = 100;
+  DATA.settleHistory.forEach(h=>{
+    ctx.font = 'bold 18px sans-serif'; ctx.fillText(`🕘 ${h.date}`, 30, y); y += 28;
+    h.lines.forEach(l=>{
+      ctx.font = '16px sans-serif';
+      ctx.fillText(`（${l.from}）應該付（${l.to}） HK$${l.hkd.toFixed(2)} / ₫${l.vnd.toLocaleString()}`, 30, y);
+      y += 26;
+    });
+    y += 10;
+  });
+  canvas.toBlob(b=>{
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.download = 'vietnam_settle_' + Date.now() + '.png';
+    a.click();
+    showToast('已匯出圖片');
+  });
+}
+
+/* ============================================================
+   汇率计算器
+   ============================================================ */
+function renderRate(){
+  document.getElementById('convRateInfo').innerHTML =
+    `💱 目前設定：1 HKD = ${DATA.rate} VND`;
+  convert();
+}
+function convert(){
+  const val = parseFloat(document.getElementById('convInput').value);
+  const from = document.getElementById('convFrom').value;
+  const to = document.getElementById('convTo').value;
+  const rate = DATA.rate;
+  const out = document.getElementById('convOutput');
+  if(isNaN(val)){ out.value=''; return; }
+  let res;
+  if(from===to) res = val;
+  else if(from==='HKD') res = val * rate;
+  else res = val / rate;
+  out.value = (to==='HKD'? 'HK$' : '₫') + Math.round(res*100)/100;
+}
+document.addEventListener('input', e=>{
+  if(['convInput','convFrom','convTo'].includes(e.target.id)) convert();
+  if(e.target.id==='rateInput'){
+    DATA.rate = parseFloat(e.target.value)||DATA.rate;
+    document.getElementById('rateDisplay').textContent = `1 HKD ≈ ${DATA.rate} VND`;
+    renderRate(); autoSave();
+  }
+});
+
+/* ============================================================
+   初始化
+   ============================================================ */
+function init(){
+  document.getElementById('rateInput').value = DATA.rate;
+  document.getElementById('rateDisplay').textContent = `1 HKD ≈ ${DATA.rate} VND`;
+  document.getElementById('versionTag').textContent = 'v' + DATA_VERSION;
+  renderSchedule();
+  renderLedger();
+  renderHistory();
+  renderMap();
+  renderRate();
+  switchTab(DATA.activeTab || 'schedule');
+  setSaveStatus('💾 已儲存', '#2A9D8F');
+}
+init();
+</script>
+</body>
+</html>
